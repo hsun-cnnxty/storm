@@ -31,8 +31,8 @@ public class KafkaBackedPartitionStateManager implements PartitionStateManager {
     private Partition _partition;
     private String _topologyInstanceId;
 
-    private String _consumerGroupId = _spoutConfig.id;
-    private String _consumerClientId = _spoutConfig.clientId;
+    private String _consumerGroupId;
+    private String _consumerClientId;
     private int _correlationId = 0;
 
     public KafkaBackedPartitionStateManager(Map stormConf, SpoutConfig spoutConfig, String topologyInstanceId, Partition partition) {
@@ -40,6 +40,8 @@ public class KafkaBackedPartitionStateManager implements PartitionStateManager {
         this._spoutConfig = spoutConfig;
         this._partition = partition;
         this._topologyInstanceId = topologyInstanceId;
+        this._consumerGroupId = _spoutConfig.id;
+        this._consumerClientId = _spoutConfig.clientId;
     }
 
     private BlockingChannel locateOffsetManager() {
