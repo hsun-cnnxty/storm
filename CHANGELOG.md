@@ -1,4 +1,11 @@
 ## 0.11.0
+ * STORM-976: Config storm.logback.conf.dir is specific to previous logging framework
+ * STORM-995: Fix excessive logging
+ * STORM-837: HdfsState ignores commits
+ * STORM-938: storm-hive add a time interval to flush tuples to hive.
+ * STORM-977: Incorrect signal (-9) when as-user is true
+ * STORM-964: Add config (with small default value) for logwriter to restrict its memory usage
+ * STORM-980: Re-include storm-kafka tests from Travis CI build
  * STORM-960: HiveBolt should ack tuples only after flushing.
  * STORM-951: Storm Hive connector leaking connections.
  * STORM_803: Better CI logs
@@ -6,7 +13,6 @@
  * STORM-809: topology.message.timeout.secs should not allow for null or <= 0 values
  * STORM-847: Add cli to get the last storm error from the topology
  * STORM-864: Exclude storm-kafka tests from Travis CI build
- * STORM-860: UI: while topology is transitioned to killed, "Activate" button is enabled but not functioning
  * STORM-477: Add warning for invalid JAVA_HOME
  * STORM-826: Update KafkaBolt to use the new kafka producer API
  * STORM-912: Support SSL on Logviewer
@@ -17,12 +23,17 @@
  * STORM-924: Set the file mode of the files included when packaging release packages
  * STORM-799: Use IErrorReport interface more broadly
  * STORM-926: change pom to use maven-shade-plugin:2.2
- * STORM-793: Made change to logviewer.clj in order to remove the invalid http 500 response
- * STORM-857: create logs metadata dir when running securely
  * STORM-942: Add FluxParser method parseInputStream() to eliminate disk usage
  * STORM-67: Provide API for spouts to know how many pending messages there are
  * STORM-918: Storm CLI could validate arguments/print usage
- * STORM-139: hashCode does not work for byte[]
+ * STORM-859: Add regression test of STORM-856
+ * STORM-913: Use Curator's delete().deletingChildrenIfNeeded() instead of zk/delete-recursive
+ * STORM-968: Adding support to generate the id based on names in Trident
+ * STORM-845: Storm ElasticSearch connector
+ * STORM-944: storm-hive pom.xml has a dependency conflict with calcite
+ * STORM-988: supervisor.slots.ports should not allow duplicate element values
+ * STORM-975: Storm-Kafka trident topology example
+ * STORM-958: Add config for init params of group mapping service
 
 ## 0.10.0-beta2
  * STORM-843: [storm-redis] Add Javadoc to storm-redis
@@ -30,6 +41,12 @@
  * STORM-810: PartitionManager in storm-kafka should commit latest offset before close
  * STORM-928: Add sources->streams->fields map to Multi-Lang Handshake
  * STORM-945: <DefaultRolloverStrategy> element is not a policy,and should not be putted in the <Policies> element.
+ * STORM-857: create logs metadata dir when running securely
+ * STORM-793: Made change to logviewer.clj in order to remove the invalid http 500 response
+ * STORM-139: hashCode does not work for byte[]
+ * STORM-860: UI: while topology is transitioned to killed, "Activate" button is enabled but not functioning
+ * STORM-966: ConfigValidation.DoubleValidator doesn't really validate whether the type of the object is a double
+ * STORM-742: Let ShellBolt treat all messages to update heartbeat
 
 ## 0.10.0-beta1
  * STORM-873: Flux does not handle diamond topologies

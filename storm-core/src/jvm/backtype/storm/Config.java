@@ -146,6 +146,12 @@ public class Config extends HashMap<String, Object> {
     public static final Object STORM_LOCAL_DIR_SCHEMA = String.class;
 
     /**
+     * A directory that holds configuration files for log4j2.
+     */
+    public static final String STORM_LOG4J2_CONF_DIR = "storm.log4j2.conf.dir";
+    public static final Object STORM_LOG4J2_CONF_DIR_SCHEMA = String.class;
+
+    /**
      * A global task scheduler used to assign topologies's tasks to supervisors' wokers.
      *
      * If this is not set, a default system scheduler will be used.
@@ -187,6 +193,14 @@ public class Config extends HashMap<String, Object> {
      */
     public static final String STORM_GROUP_MAPPING_SERVICE_CACHE_DURATION_SECS = "storm.group.mapping.service.cache.duration.secs";
     public static final Object STORM_GROUP_MAPPING_SERVICE_CACHE_DURATION_SECS_SCHEMA = Number.class;
+
+    /**
+     * Initialization parameters for the group mapping service plugin.
+     * Provides a way for a @link{STORM_GROUP_MAPPING_SERVICE_PROVIDER_PLUGIN}
+     * implementation to access optional settings.
+     */
+    public static final String STORM_GROUP_MAPPING_SERVICE_PARAMS = "storm.group.mapping.service.params";
+    public static final Object STORM_GROUP_MAPPING_SERVICE_PARAMS_SCHEMA = Map.class;
 
     /**
      * The default transport plug-in for Thrift client/server communication
@@ -876,7 +890,7 @@ public class Config extends HashMap<String, Object> {
      * how many workers run on each machine.
      */
     public static final String SUPERVISOR_SLOTS_PORTS = "supervisor.slots.ports";
-    public static final Object SUPERVISOR_SLOTS_PORTS_SCHEMA = ConfigValidation.IntegersValidator;
+    public static final Object SUPERVISOR_SLOTS_PORTS_SCHEMA = ConfigValidation.NoDuplicateIntegersValidator;
 
     /**
      * A number representing the maximum number of workers any single topology can acquire.
@@ -1194,7 +1208,7 @@ public class Config extends HashMap<String, Object> {
      * The percentage of tuples to sample to produce stats for a task.
      */
     public static final String TOPOLOGY_STATS_SAMPLE_RATE="topology.stats.sample.rate";
-    public static final Object TOPOLOGY_STATS_SAMPLE_RATE_SCHEMA = ConfigValidation.DoubleValidator;
+    public static final Object TOPOLOGY_STATS_SAMPLE_RATE_SCHEMA =ConfigValidation.PositiveNumberValidator;
 
     /**
      * The time period that builtin metrics data in bucketed into.
@@ -1219,6 +1233,12 @@ public class Config extends HashMap<String, Object> {
      */
     public static final String TOPOLOGY_WORKER_GC_CHILDOPTS="topology.worker.gc.childopts";
     public static final Object TOPOLOGY_WORKER_GC_CHILDOPTS_SCHEMA = ConfigValidation.StringOrStringListValidator;
+
+    /**
+     * Topology-specific options for the logwriter process of a worker.
+     */
+    public static final String TOPOLOGY_WORKER_LOGWRITER_CHILDOPTS="topology.worker.logwriter.childopts";
+    public static final Object TOPOLOGY_WORKER_LOGWRITER_CHILDOPTS_SCHEMA = ConfigValidation.StringOrStringListValidator;
 
     /**
      * Topology-specific classpath for the worker child process. This is combined to the usual classpath.
