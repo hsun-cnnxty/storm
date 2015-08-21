@@ -56,7 +56,7 @@ public class KafkaSpout extends BaseRichSpout {
     SpoutOutputCollector _collector;
     PartitionCoordinator _coordinator;
     DynamicPartitionConnections _connections;
-    ZkState _state;
+    ZkDataStore _state;
 
     long _lastUpdateMs = 0;
 
@@ -82,7 +82,7 @@ public class KafkaSpout extends BaseRichSpout {
         stateConf.put(Config.TRANSACTIONAL_ZOOKEEPER_SERVERS, zkServers);
         stateConf.put(Config.TRANSACTIONAL_ZOOKEEPER_PORT, zkPort);
         stateConf.put(Config.TRANSACTIONAL_ZOOKEEPER_ROOT, _spoutConfig.zkRoot);
-        _state = new ZkState(stateConf);
+        _state = new ZkDataStore(stateConf);
 
         _connections = new DynamicPartitionConnections(_spoutConfig, KafkaUtils.makeBrokerReader(conf, _spoutConfig));
 
