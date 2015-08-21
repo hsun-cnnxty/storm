@@ -74,9 +74,10 @@ public class PartitionManager {
                                                                            _spoutConfig.retryDelayMaxMs);
 
         if (_spoutConfig.useKafkaOffsetManager) {
-            _partitionStateManager = new KafkaBackedPartitionStateManager(_stormConf, _spoutConfig, _partition);
+            KafkaDataStore kafkaDataStore = new KafkaDataStore(_stormConf, _spoutConfig, _partition);
+            _partitionStateManager = new KafkaBackedPartitionStateManager(_stormConf, _spoutConfig, _partition, kafkaDataStore);
         } else {
-            _partitionStateManager = new ZKBackedPartitionStateManager(_spoutConfig, zkDataStore, _partition);
+            _partitionStateManager = new ZKBackedPartitionStateManager(_stormConf,_spoutConfig,  _partition, zkDataStore);
         }
 
         String jsonTopologyId = null;

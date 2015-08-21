@@ -15,10 +15,10 @@ public class ZKBackedPartitionStateManager implements PartitionStateManager  {
     private Partition _partition;
     private ZkDataStore _state;
 
-    public ZKBackedPartitionStateManager(SpoutConfig spoutConfig, ZkDataStore state, Partition partition) {
+    public ZKBackedPartitionStateManager(Map stormConfig, SpoutConfig spoutConfig, Partition partition, ZkDataStore zkDataStore) {
         this._spoutConfig = spoutConfig;
         this._partition = partition;
-        this._state = state;
+        this._state = zkDataStore;
     }
 
     private String committedPath() {
