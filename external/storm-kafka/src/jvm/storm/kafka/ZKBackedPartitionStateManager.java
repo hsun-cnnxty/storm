@@ -29,7 +29,7 @@ public class ZKBackedPartitionStateManager implements PartitionStateManager  {
     public Map<Object, Object> getState() {
         LOG.debug("Reading from " + committedPath() + " for state data");
         try {
-            byte[] b = _state.readBytes(committedPath());
+            byte[] b = _state.read(committedPath());
             if (b == null) {
                 return null;
             }
@@ -42,6 +42,6 @@ public class ZKBackedPartitionStateManager implements PartitionStateManager  {
     @Override
     public void writeState(Map<Object, Object> data) {
         LOG.debug("Writing to " + committedPath() + " with stat data " + data.toString());
-        _state.writeBytes(committedPath(), JSONValue.toJSONString(data).getBytes(Charset.forName("UTF-8")));
+        _state.write(committedPath(), JSONValue.toJSONString(data).getBytes(Charset.forName("UTF-8")));
     }
 }

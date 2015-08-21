@@ -34,6 +34,7 @@ import java.util.Map;
 
 public class ZkDataStore {
     public static final Logger LOG = LoggerFactory.getLogger(ZkDataStore.class);
+
     CuratorFramework _curator;
 
     private CuratorFramework newCurator(Map stateConf) throws Exception {
@@ -65,7 +66,7 @@ public class ZkDataStore {
         }
     }
 
-    public void writeBytes(String path, byte[] bytes) {
+    public void write(String path, byte[] bytes) {
         try {
             if (_curator.checkExists().forPath(path) == null) {
                 _curator.create()
@@ -80,7 +81,7 @@ public class ZkDataStore {
         }
     }
 
-    public byte[] readBytes(String path) {
+    public byte[] read(String path) {
         try {
             if (_curator.checkExists().forPath(path) != null) {
                 return _curator.getData().forPath(path);
