@@ -13,12 +13,12 @@ public class ZKBackedPartitionStateManager implements PartitionStateManager  {
 
     private SpoutConfig _spoutConfig;
     private Partition _partition;
-    private ZkDataStore _state;
+    private ZkDataStore _zkDataStore;
 
     public ZKBackedPartitionStateManager(Map stormConfig, SpoutConfig spoutConfig, Partition partition, ZkDataStore zkDataStore) {
         this._spoutConfig = spoutConfig;
         this._partition = partition;
-        this._state = zkDataStore;
+        this._zkDataStore = zkDataStore;
     }
 
     private String committedPath() {
@@ -29,7 +29,7 @@ public class ZKBackedPartitionStateManager implements PartitionStateManager  {
     public Map<Object, Object> getState() {
         LOG.debug("Reading from " + committedPath() + " for state data");
         try {
-            byte[] b = _state.read(committedPath());
+            byte[] b = _zkDataStore.read(committedPath());
             if (b == null) {
                 return null;
             }
@@ -42,6 +42,6 @@ public class ZKBackedPartitionStateManager implements PartitionStateManager  {
     @Override
     public void writeState(Map<Object, Object> data) {
         LOG.debug("Writing to " + committedPath() + " with stat data " + data.toString());
-        _state.write(committedPath(), JSONValue.toJSONString(data).getBytes(Charset.forName("UTF-8")));
+        _zkDataStore.write(committedPath(), JSONValue.toJSONString(data).getBytes(Charset.forName("UTF-8")));
     }
 }

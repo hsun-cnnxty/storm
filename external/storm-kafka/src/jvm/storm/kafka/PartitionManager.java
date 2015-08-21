@@ -55,17 +55,18 @@ public class PartitionManager {
     String _topologyInstanceId;
     SimpleConsumer _consumer;
     DynamicPartitionConnections _connections;
+    PartitionStateManager _partitionStateManager;
     Map _stormConf;
     long numberFailed, numberAcked;
 
-    PartitionStateManager _partitionStateManager;
-
-    public PartitionManager(DynamicPartitionConnections connections, String topologyInstanceId, ZkDataStore zkDataStore, Map stormConf, SpoutConfig spoutConfig, Partition id) {
+    public PartitionManager(DynamicPartitionConnections connections, String topologyInstanceId, PartitionStateManager partitionStateManager,
+                            Map stormConf, SpoutConfig spoutConfig, Partition id) {
         _partition = id;
         _connections = connections;
         _spoutConfig = spoutConfig;
         _topologyInstanceId = topologyInstanceId;
         _consumer = connections.register(id.host, id.partition);
+        _partitionStateManager = partitionStateManager;
         _stormConf = stormConf;
         numberAcked = numberFailed = 0;
 
@@ -73,12 +74,6 @@ public class PartitionManager {
                                                                            _spoutConfig.retryDelayMultiplier,
                                                                            _spoutConfig.retryDelayMaxMs);
 
-        if (_spoutConfig.useKafkaOffsetManager) {
-            KafkaDataStore kafkaDataStore = new KafkaDataStore(_stormConf, _spoutConfig, _partition);
-            _partitionStateManager = new KafkaBackedPartitionStateManager(_stormConf, _spoutConfig, _partition, kafkaDataStore);
-        } else {
-            _partitionStateManager = new ZKBackedPartitionStateManager(_stormConf,_spoutConfig,  _partition, zkDataStore);
-        }
 
         String jsonTopologyId = null;
         Long jsonOffset = null;

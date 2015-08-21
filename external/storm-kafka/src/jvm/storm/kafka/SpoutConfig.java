@@ -36,6 +36,7 @@ public class SpoutConfig extends KafkaConfig implements Serializable {
     public double retryDelayMultiplier = 1.0;
     public long retryDelayMaxMs = 60 * 1000;
 
+    public String stateStore = "storm";
     public int stateOpTimeout = 5000;
     public int stateOpMaxRetry = 3;
 
