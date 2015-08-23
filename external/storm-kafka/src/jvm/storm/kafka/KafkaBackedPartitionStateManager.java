@@ -1,19 +1,9 @@
 package storm.kafka;
 
-import com.google.common.collect.Maps;
-import kafka.api.ConsumerMetadataRequest;
-import kafka.common.ErrorMapping;
-import kafka.common.OffsetAndMetadata;
-import kafka.common.OffsetMetadataAndError;
-import kafka.common.TopicAndPartition;
-import kafka.javaapi.*;
-import kafka.network.BlockingChannel;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class KafkaBackedPartitionStateManager implements PartitionStateManager {
@@ -33,6 +23,8 @@ public class KafkaBackedPartitionStateManager implements PartitionStateManager {
 
     @Override
     public void writeState(Map<Object, Object> data) {
+        assert data.containsKey("offset");
+
         Long offsetOfPartition = (Long)data.get("offset");
         String stateData = JSONValue.toJSONString(data);
         _dataStore.write(offsetOfPartition, stateData);

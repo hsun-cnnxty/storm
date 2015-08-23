@@ -1,5 +1,6 @@
 package storm.kafka;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import kafka.api.ConsumerMetadataRequest;
 import kafka.common.ErrorMapping;
@@ -45,11 +46,25 @@ public class KafkaDataStore {
             BlockingChannel channel = new BlockingChannel(_partition.host.host, _partition.host.port,
                     BlockingChannel.UseDefaultBufferSize(),
                     BlockingChannel.UseDefaultBufferSize(),
-                    _stateOpTimeout /* read timeout in millis */);
+                    1000000000 /* read timeout in millis */);
             channel.connect();
-            channel.send(new ConsumerMetadataRequest(_consumerGroupId, ConsumerMetadataRequest.CurrentVersion(),
-                    _correlationId++, _consumerClientId));
-            ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
+
+            ConsumerMetadataResponse metadataResponse = null;
+            while (true) {
+                channel.send(new ConsumerMetadataRequest(_consumerGroupId, ConsumerMetadataRequest.CurrentVersion(),
+                        _correlationId++, _consumerClientId));
+                metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
+                if (metadataResponse.errorCode() != ErrorMapping.NoError()) {
+                    System.err.println("Failed to get coordinator: " + metadataResponse.errorCode());
+                    try {
+                        Thread.sleep(5000L);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    break;
+                }
+            }
 
             if (metadataResponse.errorCode() == ErrorMapping.NoError()) {
                 kafka.cluster.Broker offsetManager = metadataResponse.coordinator();
@@ -63,11 +78,10 @@ public class KafkaDataStore {
                             _stateOpTimeout /* read timeout in millis */);
                     channel.connect();
                 }
-                _offsetManager = channel;
-
             } else {
                 throw new RuntimeException("Kafka metadata fetch error: " + metadataResponse.errorCode());
             }
+            _offsetManager = channel;
         }
         return _offsetManager;
     }
@@ -84,6 +98,15 @@ public class KafkaDataStore {
                 _consumerClientId);
 
         BlockingChannel offsetManager = locateOffsetManager();
+
+//        TopicMetadataRequest tmreq = new TopicMetadataRequest(
+//                (short) 1, // version 1 and above fetch from Kafka, version 0 fetches from ZooKeeper
+//                _correlationId++,
+//                _consumerClientId,
+//                ImmutableList.of(_spoutConfig.topic));
+//        TopicMetadataResponse tmresp = TopicMetadataResponse.readFrom(offsetManager.receive().buffer());
+
+
         offsetManager.send(fetchRequest.underlying());
         OffsetFetchResponse fetchResponse = OffsetFetchResponse.readFrom(offsetManager.receive().buffer());
         OffsetMetadataAndError result = fetchResponse.offsets().get(thisTopicPartition);
