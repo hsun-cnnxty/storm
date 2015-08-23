@@ -46,20 +46,28 @@ public class KafkaDataStore {
             BlockingChannel channel = new BlockingChannel(_partition.host.host, _partition.host.port,
                     BlockingChannel.UseDefaultBufferSize(),
                     BlockingChannel.UseDefaultBufferSize(),
-                    1000000000 /* read timeout in millis */);
+                    1000000 /* read timeout in millis */);
             channel.connect();
 
             ConsumerMetadataResponse metadataResponse = null;
-            while (true) {
+            long backoffMillis = 3000L;
+            int maxRetry = 3;
+            int retryCount = 0;
+            // this usually only happens when the internal offsets topic does not exist before and we need to wait until
+            // the topic is automatically created and the meta data are populated across cluster. So we hard-code the retry here.
+
+            // one scenario when this could happen is during unit test.
+            while (retryCount < maxRetry) {
                 channel.send(new ConsumerMetadataRequest(_consumerGroupId, ConsumerMetadataRequest.CurrentVersion(),
                         _correlationId++, _consumerClientId));
                 metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
-                if (metadataResponse.errorCode() != ErrorMapping.NoError()) {
-                    System.err.println("Failed to get coordinator: " + metadataResponse.errorCode());
+                if (metadataResponse.errorCode() == ErrorMapping.ConsumerCoordinatorNotAvailableCode()) {
+                    LOG.warn("Failed to get coordinator: " + metadataResponse.errorCode());
+                    retryCount++;
                     try {
-                        Thread.sleep(5000L);
+                        Thread.sleep(backoffMillis);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        // eat the exception
                     }
                 } else {
                     break;
@@ -98,15 +106,6 @@ public class KafkaDataStore {
                 _consumerClientId);
 
         BlockingChannel offsetManager = locateOffsetManager();
-
-//        TopicMetadataRequest tmreq = new TopicMetadataRequest(
-//                (short) 1, // version 1 and above fetch from Kafka, version 0 fetches from ZooKeeper
-//                _correlationId++,
-//                _consumerClientId,
-//                ImmutableList.of(_spoutConfig.topic));
-//        TopicMetadataResponse tmresp = TopicMetadataResponse.readFrom(offsetManager.receive().buffer());
-
-
         offsetManager.send(fetchRequest.underlying());
         OffsetFetchResponse fetchResponse = OffsetFetchResponse.readFrom(offsetManager.receive().buffer());
         OffsetMetadataAndError result = fetchResponse.offsets().get(thisTopicPartition);

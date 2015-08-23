@@ -92,7 +92,7 @@ public class PartitionManager {
         if (jsonTopologyId == null || jsonOffset == null) { // failed to parse JSON?
             _committedTo = currentOffset;
             LOG.info("No partition information found, using configuration to determine offset");
-        } else if (!topologyInstanceId.equals(jsonTopologyId) && spoutConfig.ignoreZkOffsets) {
+        } else if (!topologyInstanceId.equals(jsonTopologyId) && (spoutConfig.ignoreStoredOffsets || spoutConfig.ignoreZkOffsets)) {
             _committedTo = KafkaUtils.getOffset(_consumer, spoutConfig.topic, id.partition, spoutConfig.startOffsetTime);
             LOG.info("Topology change detected and ignore zookeeper offsets set to true, using configuration to determine offset");
         } else {

@@ -12,10 +12,6 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-
-/**
- * Created by 155715 on 8/21/15.
- */
 public class KafkaBackedPartitionStateManagerTest {
 
     @Mock

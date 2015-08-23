@@ -71,19 +71,13 @@ public class KafkaTestBroker {
         p.setProperty("broker.id", String.valueOf(brokerId));
         p.setProperty("port", "" + port);
         p.setProperty("log.dirs", logDir.getAbsolutePath());
-        p.setProperty("default.replication.factor", "1");
+        // we need to make it default to 1 so that offset manager can create the internal topic during unit test
         p.setProperty("offsets.topic.replication.factor", "1");
-        p.setProperty("auto.create.topics.enable", "true");
-
         return new KafkaConfig(p);
     }
 
     public String getBrokerConnectionString() {
         return "localhost:" + port;
-    }
-
-    public TestingServer getZkServer() {
-        return server;
     }
 
     public int getPort() {
