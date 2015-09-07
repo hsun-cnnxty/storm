@@ -18,6 +18,7 @@
 package backtype.storm.messaging.netty;
 
 import backtype.storm.messaging.TaskMessage;
+import com.google.common.collect.ImmutableList;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -42,13 +43,10 @@ class StormServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-      List<TaskMessage> msgs = (List<TaskMessage>) msg;
-      if (msgs == null) {
-        return;
-      }
-      
+      TaskMessage taskMessage = (TaskMessage) msg;
+
       try {
-        server.enqueue(msgs, ctx.channel().remoteAddress().toString());
+        server.enqueue(ImmutableList.of(taskMessage), ctx.channel().remoteAddress().toString());
       } catch (InterruptedException e1) {
         LOG.info("failed to enqueue a request message", e1);
         failure_count.incrementAndGet();

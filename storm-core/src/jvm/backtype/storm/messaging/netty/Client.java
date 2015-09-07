@@ -25,7 +25,6 @@ import backtype.storm.utils.StormBoundedExponentialBackoffRetry;
 import backtype.storm.utils.Utils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.*;
 import org.slf4j.Logger;
@@ -175,7 +174,7 @@ public class Client extends ConnectionWithStatus implements IStatefulObject {
         // See:
         // - http://netty.io/3.9/api/org/jboss/netty/channel/ChannelEvent.html
         // - http://stackoverflow.com/questions/13356622/what-are-the-netty-channel-state-transitions
-        return channel != null && channel.isActive();
+        return channel != null && channel.isOpen();
     }
 
     /**
@@ -315,7 +314,7 @@ public class Client extends ConnectionWithStatus implements IStatefulObject {
         LOG.debug("writing {} messages to channel {}", batch.size(), channel.toString());
         pendingMessages.addAndGet(numMessages);
 
-        ChannelFuture future = channel.write(batch);
+        ChannelFuture future = channel.writeAndFlush(batch);
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 pendingMessages.addAndGet(0 - numMessages);

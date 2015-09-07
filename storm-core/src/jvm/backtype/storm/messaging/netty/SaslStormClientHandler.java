@@ -60,7 +60,7 @@ public class SaslStormClientHandler extends ChannelInboundHandlerAdapter {
                 saslNettyClient = new SaslNettyClient(topologyName, token);
                 ctx.attr(SaslNettyClientState.SASL_NETTY_CLIENT).set(saslNettyClient);
             }
-            channel.write(ControlMessage.SASL_TOKEN_MESSAGE_REQUEST);
+            channel.writeAndFlush(ControlMessage.SASL_TOKEN_MESSAGE_REQUEST);
         } catch (Exception e) {
             LOG.error("Failed to authenticate with server " + "due to error: ",
                     e);
@@ -132,7 +132,7 @@ public class SaslStormClientHandler extends ChannelInboundHandlerAdapter {
         // Construct a message containing the SASL response and send it to the
         // server.
         SaslMessageToken saslResponse = new SaslMessageToken(responseToServer);
-        channel.write(saslResponse);
+        channel.writeAndFlush(saslResponse);
     }
 
     private void getSASLCredentials() throws IOException {

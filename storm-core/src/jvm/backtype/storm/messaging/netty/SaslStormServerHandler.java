@@ -81,7 +81,7 @@ public class SaslStormServerHandler extends ChannelInboundHandlerAdapter {
             saslTokenMessageRequest = new SaslMessageToken(
                     saslNettyServer.response(new byte[0]));
             // Send response to client.
-            channel.write(saslTokenMessageRequest);
+            channel.writeAndFlush(saslTokenMessageRequest);
             // do not send upstream to other handlers: no further action needs
             // to be done for SASL_TOKEN_MESSAGE_REQUEST requests.
             return;
@@ -103,14 +103,14 @@ public class SaslStormServerHandler extends ChannelInboundHandlerAdapter {
                             .getSaslToken()));
 
             // Send response to client.
-            channel.write(saslTokenMessageRequest);
+            channel.writeAndFlush(saslTokenMessageRequest);
 
             if (saslNettyServer.isComplete()) {
                 // If authentication of client is complete, we will also send a
                 // SASL-Complete message to the client.
                 LOG.debug("SASL authentication is complete for client with "
                         + "username: " + saslNettyServer.getUserName());
-                channel.write(ControlMessage.SASL_COMPLETE_REQUEST);
+                channel.writeAndFlush(ControlMessage.SASL_COMPLETE_REQUEST);
                 LOG.debug("Removing SaslServerHandler from pipeline since SASL "
                         + "authentication is complete.");
                 ctx.pipeline().remove(this);
