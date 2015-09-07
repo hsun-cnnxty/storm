@@ -26,6 +26,7 @@ import backtype.storm.utils.Utils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,10 +141,10 @@ public class Client extends ConnectionWithStatus implements IStatefulObject {
     private Bootstrap createClientBootstrap(EventLoopGroup eventLoopGroup, int bufferSize) {
         Bootstrap bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
-                .channel(NioServerSocketChannel.class)
-//                .option(ChannelOption.TCP_NODELAY, true)
-//                .option(ChannelOption.SO_SNDBUF, bufferSize)
-//                .option(ChannelOption.SO_KEEPALIVE, true)
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_SNDBUF, bufferSize)
+                .option(ChannelOption.SO_KEEPALIVE, true)
                 .handler(new StormClientPipelineFactory(this));
         return bootstrap;
     }

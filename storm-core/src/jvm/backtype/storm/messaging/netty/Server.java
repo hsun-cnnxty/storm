@@ -113,8 +113,8 @@ class Server extends ConnectionWithStatus implements IStatefulObject {
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, backlog)
                 .childOption(ChannelOption.TCP_NODELAY, true)
-//                .childOption(ChannelOption.SO_RCVBUF, buffer_size)
-//                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.SO_RCVBUF, buffer_size)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .childHandler(new StormServerPipelineFactory(this));
 
 

@@ -34,8 +34,9 @@ public class MessageEncoder extends MessageToMessageEncoder {
 
         } else if (obj instanceof SaslMessageToken) {
         	out.add(((SaslMessageToken)obj).buffer());
+
+        } else {
+            throw new RuntimeException("Unsupported encoding of object of class " + obj.getClass().getName());
         }
-        
-        throw new RuntimeException("Unsupported encoding of object of class "+obj.getClass().getName());
     }
 }
