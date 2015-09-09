@@ -27,6 +27,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.*;
+import io.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -449,7 +450,7 @@ public class Client extends ConnectionWithStatus implements IStatefulObject {
      * This task runs on a single thread shared among all clients, and thus
      * should not perform operations that block.
      */
-    private class Connect implements io.netty.util.TimerTask {
+    private class Connect implements TimerTask {
 
         private final InetSocketAddress address;
 
@@ -461,10 +462,11 @@ public class Client extends ConnectionWithStatus implements IStatefulObject {
             String baseMsg = String.format("connection attempt %s to %s failed", connectionAttempts,
                     dstAddressPrefixedName);
             String failureMsg = (t == null) ? baseMsg : baseMsg + ": " + t.toString();
-            LOG.error(failureMsg, t);
+            LOG.error(failureMsg);
             long nextDelayMs = retryPolicy.getSleepTimeMs(connectionAttempts.get(), 0);
             scheduleConnect(nextDelayMs);
         }
+
 
         @Override
         public void run(Timeout timeout) throws Exception {
@@ -504,7 +506,6 @@ public class Client extends ConnectionWithStatus implements IStatefulObject {
 
             }
         }
-
     }
 
 }

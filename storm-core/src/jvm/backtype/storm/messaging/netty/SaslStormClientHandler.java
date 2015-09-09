@@ -44,7 +44,7 @@ public class SaslStormClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         // register the newly established channel
         Channel channel = ctx.channel();
 

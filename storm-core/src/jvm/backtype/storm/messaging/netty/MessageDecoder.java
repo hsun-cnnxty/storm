@@ -40,6 +40,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         long available = buf.readableBytes();
         if (available < 2) {
             //need more data
+            return;
         }
 
         // Use while loop, try to decode as more messages as possible in single call
@@ -73,6 +74,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
                 if (buf.readableBytes() < 4) {
                     //need more data
                     buf.resetReaderIndex();
+                    return;
                 }
                 
                 // Read the length field.
@@ -86,6 +88,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
                 if (buf.readableBytes() < length) {
                     // The whole bytes were not received yet - return null.
                     buf.resetReaderIndex();
+                    return;
                 }
                 
                 // There's enough bytes in the buffer. Read it.  

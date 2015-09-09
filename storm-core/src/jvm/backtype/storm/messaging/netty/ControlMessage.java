@@ -56,7 +56,7 @@ enum ControlMessage {
     
     /**
      * encode the current Control Message into a channel buffer
-     * @throws Exception
+     * @throws Exception if failed to write to buffer
      */
     ByteBuf buffer() throws IOException {
         ByteBufOutputStream bout = new ByteBufOutputStream(Unpooled.directBuffer(encodeLength()));

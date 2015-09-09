@@ -143,5 +143,4 @@ public class SaslStormServerHandler extends ChannelInboundHandlerAdapter {
         LOG.debug("SASL credentials for storm topology " + topologyName
                 + " is " + secretKey);
     }
-
 }

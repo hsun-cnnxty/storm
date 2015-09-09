@@ -97,6 +97,7 @@ class Server extends ConnectionWithStatus implements IStatefulObject {
         ThreadFactory bossFactory = new NettyRenameThreadFactory(name() + "-boss");
         ThreadFactory workerFactory = new NettyRenameThreadFactory(name() + "-worker");
 
+        // 0 means DEFAULT_EVENT_LOOP_THREADS
         bossEventLoopGroup = new NioEventLoopGroup(0, bossFactory);
         if (maxWorkers > 0) {
             workerEventLoopGroup = new NioEventLoopGroup(maxWorkers, workerFactory);
@@ -296,7 +297,7 @@ class Server extends ConnectionWithStatus implements IStatefulObject {
     }
 
     private boolean connectionEstablished(Channel channel) {
-      return channel != null && channel.isActive();
+      return channel != null && channel.isOpen();
     }
 
     private boolean connectionEstablished(ChannelGroup allChannels) {

@@ -56,6 +56,7 @@ public class Context implements IContext {
 		ThreadFactory bossFactory = new NettyRenameThreadFactory("client" + "-boss");
         ThreadFactory workerFactory = new NettyRenameThreadFactory("client" + "-worker");
 
+        // 0 means DEFAULT_EVENT_LOOP_THREADS
         bossEventLoopGroup = new NioEventLoopGroup(0, bossFactory);
         if (maxWorkers > 0) {
             workerEventLoopGroup = new NioEventLoopGroup(maxWorkers, workerFactory);
