@@ -17,26 +17,18 @@
  */
 package backtype.storm.utils;
 
-import com.lmax.disruptor.AlertException;
-import com.lmax.disruptor.ClaimStrategy;
-import com.lmax.disruptor.EventFactory;
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.InsufficientCapacityException;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.Sequence;
-import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.SingleThreadedClaimStrategy;
-import com.lmax.disruptor.WaitStrategy;
+import backtype.storm.metric.api.IStatefulObject;
+import com.lmax.disruptor.*;
+import com.lmax.disruptor.dsl.Disruptor;
+import com.lmax.disruptor.dsl.ProducerType;
 
-import java.util.Random;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.HashMap;
 import java.util.Map;
-
-import backtype.storm.metric.api.IStatefulObject;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
@@ -62,34 +54,38 @@ public class DisruptorQueue implements IStatefulObject {
     private static String PREFIX = "disruptor-";
     private String _queueName = "";
 
-    private long _waitTimeout;
-
     private final QueueMetrics _metrics;
     private DisruptorBackpressureCallback _cb = null;
     private int _highWaterMark = 0;
     private int _lowWaterMark = 0;
     private boolean _enableBackpressure = false;
 
-    public DisruptorQueue(String queueName, ClaimStrategy claim, WaitStrategy wait, long timeout) {
+    public DisruptorQueue(String queueName, int bufferSize, ProducerType producerType, WaitStrategy wait) {
         this._queueName = PREFIX + queueName;
-        _buffer = new RingBuffer<MutableObject>(new ObjectEventFactory(), claim, wait);
+
+        // Executor that will be used to construct new threads for consumers
+        Executor executor = Executors.newCachedThreadPool();
+
+        Disruptor<MutableObject> disruptor = new Disruptor<MutableObject>(new ObjectEventFactory(), bufferSize, executor,
+                producerType, wait);
+
+        _buffer = disruptor.getRingBuffer();
+
         _consumer = new Sequence();
         _barrier = _buffer.newBarrier();
-        _buffer.setGatingSequences(_consumer);
+        _buffer.addGatingSequences(_consumer);
         _metrics = new QueueMetrics();
 
-        if (claim instanceof SingleThreadedClaimStrategy) {
-            consumerStartedFlag = true;
-        } else {
-            // make sure we flush the pending messages in cache first
-            try {
-                publishDirect(FLUSH_CACHE, true);
-            } catch (InsufficientCapacityException e) {
-                throw new RuntimeException("This code should be unreachable!", e);
-            }
-        }
-
-        _waitTimeout = timeout;
+        if (producerType == ProducerType.SINGLE) {
+             consumerStartedFlag = true;
+         } else {
+             // make sure we flush the pending messages in cache first
+             try {
+                 publishDirect(FLUSH_CACHE, true);
+             } catch (InsufficientCapacityException e) {
+                 throw new RuntimeException("This code should be unreachable!", e);
+             }
+         }
     }
 
     public String getName() {
@@ -107,9 +103,7 @@ public class DisruptorQueue implements IStatefulObject {
     public void consumeBatchWhenAvailable(EventHandler<Object> handler) {
         try {
             final long nextSequence = _consumer.get() + 1;
-            final long availableSequence =
-                    _waitTimeout == 0L ? _barrier.waitFor(nextSequence) : _barrier.waitFor(nextSequence, _waitTimeout,
-                            TimeUnit.MILLISECONDS);
+            final long availableSequence = _barrier.waitFor(nextSequence);
 
             if (availableSequence >= nextSequence) {
                 consumeBatchToCursor(availableSequence, handler);
@@ -118,9 +112,10 @@ public class DisruptorQueue implements IStatefulObject {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
         }
     }
-
 
     private void consumeBatchToCursor(long cursor, EventHandler<Object> handler) {
         for (long curr = _consumer.get() + 1; curr <= cursor; curr++) {

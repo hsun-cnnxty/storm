@@ -16,28 +16,31 @@
 
 (ns backtype.storm.disruptor
   (:import [backtype.storm.utils DisruptorQueue WorkerBackpressureCallback DisruptorBackpressureCallback])
-  (:import [com.lmax.disruptor MultiThreadedClaimStrategy SingleThreadedClaimStrategy
-            BlockingWaitStrategy SleepingWaitStrategy YieldingWaitStrategy
-            BusySpinWaitStrategy])
+  (:import [com.lmax.disruptor BlockingWaitStrategy SleepingWaitStrategy YieldingWaitStrategy
+                               BusySpinWaitStrategy LiteBlockingWaitStrategy TimeoutBlockingWaitStrategy]
+           (java.util.concurrent TimeUnit)
+           (com.lmax.disruptor.dsl ProducerType))
   (:require [clojure [string :as str]])
   (:require [clojure [set :as set]])
   (:use [clojure walk])
   (:use [backtype.storm util log]))
 
-(def CLAIM-STRATEGY
-  {:multi-threaded (fn [size] (MultiThreadedClaimStrategy. (int size)))
-   :single-threaded (fn [size] (SingleThreadedClaimStrategy. (int size)))})
+(def PRODUCER_TYPE
+  { :multi-threaded ProducerType/MULTI
+    :single-threaded ProducerType/SINGLE})
 
 (def WAIT-STRATEGY
-  {:block (fn [] (BlockingWaitStrategy.))
-   :yield (fn [] (YieldingWaitStrategy.))
-   :sleep (fn [] (SleepingWaitStrategy.))
-   :spin (fn [] (BusySpinWaitStrategy.))})
+  {:block         (fn [timeout] (BlockingWaitStrategy.))
+   :yield         (fn [timeout] (YieldingWaitStrategy.))
+   :sleep         (fn [timeout] (SleepingWaitStrategy.))
+   :spin          (fn [timeout] (BusySpinWaitStrategy.))
+   :lite-block    (fn [timeout] (LiteBlockingWaitStrategy.))
+   :timeout-block (fn [timeout] (TimeoutBlockingWaitStrategy. timeout TimeUnit/MILLISECONDS))})
 
 (defn- mk-wait-strategy
-  [spec]
+  [spec timeout]
   (if (keyword? spec)
-    ((WAIT-STRATEGY spec))
+    ((WAIT-STRATEGY spec) timeout)
     (-> (str spec) new-instance)))
 
 ;; :block strategy requires using a timeout on waitFor (implemented in DisruptorQueue), as sometimes the consumer stays blocked even when there's an item on the queue.
@@ -45,10 +48,10 @@
 ;; wouldn't make it to the acker until the batch timed out and another tuple was played into the queue,
 ;; unblocking the consumer
 (defnk disruptor-queue
-  [^String queue-name buffer-size timeout :claim-strategy :multi-threaded :wait-strategy :block]
-  (DisruptorQueue. queue-name
-                   ((CLAIM-STRATEGY claim-strategy) buffer-size)
-                   (mk-wait-strategy wait-strategy) timeout))
+  [^String queue-name buffer-size timeout :producer-type :multi-threaded :wait-strategy :block]
+  (DisruptorQueue. queue-name buffer-size
+                   (PRODUCER_TYPE producer-type)
+                   (mk-wait-strategy wait-strategy timeout)))
 
 (defn clojure-handler
   [afn]

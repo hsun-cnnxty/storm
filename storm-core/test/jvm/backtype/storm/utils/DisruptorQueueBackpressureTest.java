@@ -17,17 +17,18 @@
  */
 package backtype.storm.utils;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.MultiThreadedClaimStrategy;
+import com.lmax.disruptor.TimeoutBlockingWaitStrategy;
+import com.lmax.disruptor.dsl.ProducerType;
+import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
-import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DisruptorQueueBackpressureTest extends TestCase {
 
@@ -109,7 +110,6 @@ public class DisruptorQueueBackpressureTest extends TestCase {
     }
 
     private static DisruptorQueue createQueue(String name, int queueSize) {
-        return new DisruptorQueue(name, new MultiThreadedClaimStrategy(
-                queueSize), new BlockingWaitStrategy(), 10L);
+        return new DisruptorQueue(name, queueSize, ProducerType.MULTI, new TimeoutBlockingWaitStrategy(10L, TimeUnit.MILLISECONDS));
     }
 }

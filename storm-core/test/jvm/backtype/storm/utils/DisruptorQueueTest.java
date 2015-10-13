@@ -17,16 +17,17 @@
  */
 package backtype.storm.utils;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.InsufficientCapacityException;
-import com.lmax.disruptor.MultiThreadedClaimStrategy;
+import com.lmax.disruptor.TimeoutBlockingWaitStrategy;
+import com.lmax.disruptor.dsl.ProducerType;
+import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
-import junit.framework.TestCase;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DisruptorQueueTest extends TestCase {
 
@@ -153,7 +154,6 @@ public class DisruptorQueueTest extends TestCase {
     };
 
     private static DisruptorQueue createQueue(String name, int queueSize) {
-        return new DisruptorQueue(name, new MultiThreadedClaimStrategy(
-                queueSize), new BlockingWaitStrategy(), 10L);
+        return new DisruptorQueue(name, queueSize, ProducerType.MULTI, new TimeoutBlockingWaitStrategy(10L, TimeUnit.MILLISECONDS));
     }
 }
